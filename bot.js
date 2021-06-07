@@ -1,9 +1,10 @@
-const { Telegraf } = require('telegraf')
+const { Telegraf,Composer, Markup } = require('telegraf')
+ 
 const HttpsProxyAgent = require('https-proxy-agent');
 //const { text } = require('telegraf/typings/button');
 
 
-//token = '1888149585:AAGcBMB_tyOAhM3WY4kC1RR0G1BDX20PCR4'; Este token es para el bot jccabrera
+//token = '1888149585:AAGcBMB_tyOAhM3WY4kC1RR0G1BDX20PCR4';  
 token = '1836957884:AAH-MU_n-K2gUyyhgDhVjOqO36Gxu2v6sSQ';
 
 //process.env.http_proxy="http://darkness:puta2017@[192.168.0.1]:3128/"
@@ -11,86 +12,186 @@ token = '1836957884:AAH-MU_n-K2gUyyhgDhVjOqO36Gxu2v6sSQ';
 
 ///https-proxy="http://darkness:puta2017@[192.168.0.1]:3128/"
 
-/*const bot = new Telegraf(token, {
-    telegram: {
-      agent: new HttpsProxyAgent('http://darkness:puta2017@[192.168.0.1]:3128/')
-    }
-  });*/
-
-const bot = new Telegraf(token); 
+const bot = new Telegraf(token);
 
 //console.log(bot)
                         
 
-bot.start((ctx) => {
-    
-    ctx.telegram.sendMessage(ctx.chat.id,'Bienvenido '+ctx.from.first_name+' '+ctx.from.last_name+' a Digital Templates',{
-        reply_markup:{
-            inline_keyboard:[
-                [{text:"🌅 Catálogos", url: 'www.google.com'},
-                {text:"💵 Donación", callback_data: 'boton2'},
-                {text:"❓ Ayuda",callback_data: 'boton3'},
-                
-            ]
-            ]
-        }
+//bot.use(Telegraf.log())
 
-    })
+
+
+bot.start( async (ctx) => {
+    let bienvenida = 'Bienvenido '+ctx.from.first_name+' '+ctx.from.last_name+
+                    '\n\n▫️Nuestro Bot incluye todo lo que usted necesita en cuestion a diseños se refiere.'
+                    +'\n\n▫️Contamos con un extenso Catálogo que incluye las mas variadas y exigentes Ofertas.'
+                    +'\n\n▫️Al encontrar la Plantilla de su Preferencia, para adquirirla puede realizar el Pago por el método que mejor le convenga.'
+
+                    return await ctx.reply(bienvenida, Markup
+                    .keyboard([
+                         
+                      ["🌅 Catálogos",'💵 PAGOS'],
+                         // Row1 with 2 buttons
+                      ['❓ AYUDA'], // Row2 with 2 buttons
+                      
+                    ])
+                    .oneTime()
+                    .resize()
+                  )
+                })
 
      
+bot.hears('🌅 Catálogos', ctx => {
 
+     ctx.reply("NUESTRO CATÁLOGO", Markup
+        .keyboard([
+          ['☕️ Tazas','👕 Pullovers','✂️ Cortes en Vinil'],
+          ['🖼 Cuadros Decorativos','🌄 Vectores para Grabado Laser'],
+          ['⬅️ Inicio'],  
+          
+        ])
+        .oneTime()
+        .resize()
+         
+      )
 
 })
 
 
+ 
 
 
-
-bot.on('callback_query',(ctx) =>{
-
-    //console.log(ctx)
+bot.hears('☕️ Tazas',async (ctx) => {
+    console.log("JULIOOOOOOOOOOOOOO")
     
-    let {update:{callback_query:{data}}}= ctx;
-    console.log(data)
+    const fs = require('fs');
 
-    const dato = data
-    const msg = ctx.message
+    
+    const dir = await fs.promises.opendir('photos');
+    for await (const dirent of dir) {
 
-    if(dato == 'boton1'){
-       // ctx.telegram.sendMessage(ctx.chat.id,'Accion del Boton 1')
-      /* ctx.replyWithPhoto({ source: 'photos/foto.jpg' },{ caption: "Catalogo 1" });
+        console.log(dirent)
 
-       ctx.telegram.sendMessage(ctx.chat.id,'Catálogos',{
-        reply_markup:{
-            inline_keyboard:[
-                [{text:"Tazas", callback_data: 'boton5'},
-                {text:"Pullover", callback_data: 'boton6'},
-                {text:"Cuadros decorarivos",callback_data: 'boton7'},
-                {text:"Cortes en vinil", callback_data: 'boton8'},
-                {text:"Vectores para grabado laser",callback_data: 'boton9'},
-                
-            ]
-            ]
+        if(dirent.name.endsWith('.jpg') | dirent.name.endsWith('.png')){
+            if(dirent.name.endsWith('.jpg')){
+             var cadena = dirent.name.split('.jpg')
+            }else{
+             var cadena = dirent.name.split('.png')   
+            } 
+            let archivo = cadena[0]+'.rar'
+            //console.log(cadena[0]+'.rar')
+            console.log(cadena)
+
+             
+            
+
+            let existe =async (path,archivo) => {
+                if(fs.existsSync(path)){
+                    console.log("El archivo EXISTE!");
+                      
+
+                    await ctx.replyWithPhoto({ source: `photos/${dirent.name}`},
+                       {
+                         caption: 'Diseño para Tazas y Jarras para el Dia de los Padres',
+                          
+                         parse_mode: 'Markdown',
+                         ...Markup.inlineKeyboard([
+                             [{text:"Link de Descarga del Catálogo", callback_data: archivo}]
+                             
+                           ])
+           
+                       })  
+                    
+                }else{
+                    console.log("El archivo NO EXISTE!")
+                  
+                     await ctx.replyWithPhoto({ source: `photos/${dirent.name}`},
+                       {
+                         caption: 'Diseño para Tazas y Jarras para el Dia de los Padres',
+                          
+                       })  
+              }
+            }
+            
+               
+            console.log(existe(`photos/${archivo}`,archivo))   
+
+            
+                 
+             
+    
+    
+            console.log(dirent.name);
         }
-
-    })*/
-                
     }
-
-    if(dato == 'boton2'){
-        ctx.telegram.sendMessage(ctx.chat.id,'Accion del Boton 2')
-    }
-
-    if(dato == 'boton3'){
-        ctx.telegram.sendMessage(ctx.chat.id,'Accion del Boton 4')
-    }
-
-    if(dato == 'boton4'){
-        ctx.telegram.sendMessage(ctx.chat.id,'Accion del Boton 4')
-    }
+   
+    
+   
 
 
-})
+    bot.on('callback_query',(ctx) =>{
+
+        //console.log(ctx)
+        
+        let {update:{callback_query:{data}}}= ctx;
+        console.log(data)
+    
+        const dato = data
+        const msg = ctx.message
+    
+            
+        
+            ctx.telegram.sendMessage(ctx.chat.id,'👇')
+
+            ctx.replyWithDocument({source: `photos/${dato}`   });
+       
+    
+        
+    
+    })
+
+
+    ctx.reply("👍", Markup
+        .keyboard([
+          ['☕️ Tazas','👕 Pullovers','✂️ Cortes en Vinil'],
+          ['🖼 Cuadros Decorativos','🌄 Vectores para Grabado Laser'],
+          ['⬅️ Inicio'],  
+          
+        ])
+        .oneTime()
+        .resize()
+         
+      )
+  })
+
+
+
+
+  bot.hears('⬅️ Inicio',async (ctx) => {
+    let bienvenida = 'Bienvenido '+ctx.from.first_name+' '+ctx.from.last_name+
+                    '\n\n▫️Nuestro Bot incluye todo lo que usted necesita en cuestion a diseños se refiere.'
+                    +'\n\n▫️Contamos con un extenso Catálogo que incluye las mas variadas y exigentes Ofertas.'
+                    +'\n\n▫️Al encontrar la Plantilla de su Preferencia, para adquirirla puede realizar el Pago por el método que mejor le convenga.'
+
+                    return await ctx.reply(bienvenida, Markup
+                    .keyboard([
+                         
+                      ["🌅 Catálogos",'💵 PAGOS'],
+                         // Row1 with 2 buttons
+                      ['❓ AYUDA'], // Row2 with 2 buttons
+                      
+                    ])
+                    .oneTime()
+                    .resize()
+                  )
+  })
+
+
+
+
+/*bot.action(/.+/, (ctx) => {
+  return ctx.answerCbQuery(`Oh, ${ctx.match[0]}! Great choice`)
+})*/
  
 bot.launch()
 
